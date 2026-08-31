@@ -1,340 +1,888 @@
-html = r'''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>IST Flip Clock</title>
 
 <style>
-    * {
-        box-sizing: border-box;
+
+/* ==============================
+   BASIC PAGE
+============================== */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background: #000;
+    color: #bdbdbd;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    overflow: hidden;
+}
+
+
+/* ==============================
+   AM / PM
+============================== */
+
+.period {
+    position: fixed;
+
+    top: 30px;
+    left: 35px;
+
+    color: #bdbdbd;
+
+    font-size: 42px;
+    font-weight: bold;
+
+    letter-spacing: -1px;
+}
+
+
+/* ==============================
+   CLOCK
+============================== */
+
+.clock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 30px;
+}
+
+
+/* Each pair of digits */
+
+.group {
+    display: flex;
+
+    gap: 10px;
+}
+
+
+/* ==============================
+   DIGIT CARD
+============================== */
+
+.digit {
+    position: relative;
+
+    width: 210px;
+    height: 310px;
+
+    background: #111;
+
+    border-radius: 22px;
+
+    overflow: hidden;
+
+    perspective: 1000px;
+
+    box-shadow:
+        inset 0 0 35px rgba(255,255,255,0.025),
+        0 8px 25px rgba(0,0,0,0.8);
+}
+
+
+/* ==============================
+   TOP / BOTTOM
+============================== */
+
+.half {
+    position: absolute;
+
+    left: 0;
+
+    width: 100%;
+    height: 50%;
+
+    overflow: hidden;
+
+    background: #111;
+}
+
+
+/* Top */
+
+.top {
+    top: 0;
+}
+
+
+/* Bottom */
+
+.bottom {
+    bottom: 0;
+}
+
+
+/* ==============================
+   NUMBERS
+============================== */
+
+.num {
+    position: absolute;
+
+    width: 100%;
+    height: 200%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    color: #bdbdbd;
+
+    font-size: 255px;
+
+    font-weight: 700;
+
+    line-height: 1;
+
+    letter-spacing: -10px;
+
+    user-select: none;
+}
+
+
+/* Number in top half */
+
+.top .num {
+    top: 0;
+}
+
+
+/* Number in bottom half */
+
+.bottom .num {
+    bottom: 0;
+}
+
+
+/* ==============================
+   CENTER LINE
+============================== */
+
+.digit::after {
+    content: "";
+
+    position: absolute;
+
+    z-index: 50;
+
+    left: 0;
+    right: 0;
+
+    top: 50%;
+
+    height: 5px;
+
+    transform: translateY(-50%);
+
+    background: #050505;
+
+    box-shadow:
+        0 1px 1px rgba(255,255,255,0.04);
+}
+
+
+/* ==============================
+   FLIP CARD
+============================== */
+
+.flap {
+    position: absolute;
+
+    z-index: 40;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 50%;
+
+    overflow: hidden;
+
+    background: #111;
+
+    transform-origin: bottom center;
+
+    transform-style: preserve-3d;
+
+    backface-visibility: hidden;
+}
+
+
+/* Number on flip */
+
+.flap .num {
+    top: 0;
+}
+
+
+/* Animation */
+
+.flap.flip {
+    animation:
+        flipAnimation
+        0.65s
+        cubic-bezier(.37,.01,.2,1)
+        forwards;
+}
+
+
+@keyframes flipAnimation {
+
+    0% {
+        transform: rotateX(0deg);
+
+        filter: brightness(1);
     }
 
-    html, body {
-        width: 100%;
-        height: 100%;
-        margin: 0;
+    40% {
+        filter: brightness(0.75);
     }
 
-    body {
-        background: #000;
-        color: #bdbdbd;
-        font-family: Arial, Helvetica, sans-serif;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    100% {
+        transform: rotateX(-90deg);
+
+        filter: brightness(0.45);
     }
+
+}
+
+
+/* ==============================
+   COLON
+============================== */
+
+.colon {
+    color: #777;
+
+    font-size: 70px;
+
+    font-weight: bold;
+
+    margin: 0 -15px;
+
+    user-select: none;
+}
+
+
+/* ==============================
+   IST LABEL
+============================== */
+
+.label {
+    position: fixed;
+
+    bottom: 20px;
+    left: 28px;
+
+    color: #666;
+
+    font-size: 14px;
+
+    letter-spacing: 1px;
+}
+
+
+/* ==============================
+   MOBILE
+============================== */
+
+@media (max-width: 1200px) {
 
     .clock {
-        width: min(96vw, 1500px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: clamp(18px, 2vw, 35px);
+        gap: 15px;
     }
 
     .group {
-        display: flex;
-        gap: clamp(7px, 0.8vw, 14px);
+        gap: 6px;
     }
 
     .digit {
-        position: relative;
-        width: clamp(125px, 18vw, 285px);
-        height: clamp(190px, 25vw, 410px);
-        perspective: 900px;
-        background: #111;
-        border-radius: clamp(14px, 2vw, 28px);
-        overflow: hidden;
-        box-shadow:
-            inset 0 0 35px rgba(255,255,255,0.025),
-            0 8px 30px rgba(0,0,0,0.7);
-    }
-
-    .half {
-        position: absolute;
-        left: 0;
-        width: 100%;
-        height: 50%;
-        overflow: hidden;
-        background: #111;
-    }
-
-    .top {
-        top: 0;
-        border-radius: inherit inherit 0 0;
-    }
-
-    .bottom {
-        bottom: 0;
-        border-radius: 0 0 inherit inherit;
+        width: 150px;
+        height: 230px;
     }
 
     .num {
-        position: absolute;
-        left: 0;
-        width: 100%;
-        height: 200%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #bdbdbd;
-        font-size: clamp(150px, 20vw, 340px);
-        font-weight: 700;
-        line-height: 1;
-        letter-spacing: -0.08em;
-        user-select: none;
+        font-size: 190px;
     }
 
-    .top .num {
-        top: 0;
+    .colon {
+        font-size: 45px;
+        margin: 0 -8px;
     }
 
-    .bottom .num {
-        bottom: 0;
+}
+
+
+@media (max-width: 750px) {
+
+    .clock {
+        gap: 5px;
     }
 
-    /* Center split */
-    .digit::after {
-        content: "";
-        position: absolute;
-        z-index: 20;
-        left: 0;
-        right: 0;
-        top: 50%;
-        height: 6px;
-        transform: translateY(-50%);
-        background: #050505;
-        box-shadow: 0 1px 1px rgba(255,255,255,0.04);
+    .group {
+        gap: 3px;
     }
 
-    /* The animated top flap */
-    .flap {
-        position: absolute;
-        z-index: 30;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 50%;
-        overflow: hidden;
-        transform-origin: bottom center;
-        transform-style: preserve-3d;
-        background: #111;
-        border-radius: inherit inherit 0 0;
-        backface-visibility: hidden;
+    .digit {
+        width: 17vw;
+        height: 27vw;
+
+        border-radius: 10px;
     }
 
-    .flap .num {
-        top: 0;
+    .num {
+        font-size: 23vw;
+
+        letter-spacing: -5px;
     }
 
-    .flap.flip {
-        animation: flip 0.62s cubic-bezier(.37,.01,.2,1) forwards;
-    }
-
-    @keyframes flip {
-        0% {
-            transform: rotateX(0deg);
-            filter: brightness(1);
-        }
-        45% {
-            filter: brightness(.72);
-        }
-        100% {
-            transform: rotateX(-90deg);
-            filter: brightness(.5);
-        }
+    .colon {
+        font-size: 25px;
+        margin: 0 -3px;
     }
 
     .period {
-        position: fixed;
-        top: 28px;
-        left: 35px;
-        font-size: clamp(20px, 2.7vw, 44px);
-        font-weight: 700;
-        color: #bdbdbd;
-        letter-spacing: -1px;
+        top: 15px;
+        left: 18px;
+
+        font-size: 20px;
     }
 
-    .label {
-        position: fixed;
-        bottom: 22px;
-        left: 28px;
-        color: #777;
-        font-size: 14px;
-        letter-spacing: .5px;
-    }
+}
 
-    @media (max-width: 700px) {
-        .clock {
-            gap: 8px;
-        }
-
-        .group {
-            gap: 5px;
-        }
-
-        .digit {
-            width: 22vw;
-            height: 32vw;
-            border-radius: 12px;
-        }
-
-        .num {
-            font-size: 29vw;
-        }
-
-        .digit::after {
-            height: 4px;
-        }
-
-        .period {
-            top: 16px;
-            left: 18px;
-            font-size: 18px;
-        }
-    }
 </style>
 </head>
 
+
 <body>
 
-<div class="period" id="period">AM</div>
+
+<!-- ==============================
+     AM / PM
+============================== -->
+
+<div
+    class="period"
+    id="period">
+    AM
+</div>
+
+
+
+<!-- ==============================
+     CLOCK
+============================== -->
 
 <div class="clock">
 
-    <div class="group">
-        <div class="digit" id="h1"></div>
-        <div class="digit" id="h2"></div>
-    </div>
+
+    <!-- HOURS -->
 
     <div class="group">
-        <div class="digit" id="m1"></div>
-        <div class="digit" id="m2"></div>
+
+        <div
+            class="digit"
+            id="hour1">
+        </div>
+
+        <div
+            class="digit"
+            id="hour2">
+        </div>
+
     </div>
+
+
+    <!-- COLON -->
+
+    <div class="colon">
+        :
+    </div>
+
+
+    <!-- MINUTES -->
+
+    <div class="group">
+
+        <div
+            class="digit"
+            id="minute1">
+        </div>
+
+        <div
+            class="digit"
+            id="minute2">
+        </div>
+
+    </div>
+
+
+    <!-- COLON -->
+
+    <div class="colon">
+        :
+    </div>
+
+
+    <!-- SECONDS -->
+
+    <div class="group">
+
+        <div
+            class="digit"
+            id="second1">
+        </div>
+
+        <div
+            class="digit"
+            id="second2">
+        </div>
+
+    </div>
+
 
 </div>
 
-<div class="label">IST • India Standard Time</div>
+
+
+<!-- ==============================
+     LABEL
+============================== -->
+
+<div class="label">
+    IST • INDIA STANDARD TIME
+</div>
+
+
 
 <script>
-    const digits = ["h1", "h2", "m1", "m2"];
-    let previous = null;
 
-    function createDigit(element, value) {
-        element.innerHTML = `
-            <div class="half top">
-                <div class="num">${value}</div>
+
+/* =================================
+   DIGIT IDs
+================================= */
+
+const digitIDs = [
+
+    "hour1",
+    "hour2",
+
+    "minute1",
+    "minute2",
+
+    "second1",
+    "second2"
+
+];
+
+
+let previousTime = null;
+
+
+
+/* =================================
+   CREATE DIGIT
+================================= */
+
+function createDigit(element, value) {
+
+    element.innerHTML = `
+
+        <div class="half top">
+
+            <div class="num">
+                ${value}
             </div>
 
-            <div class="half bottom">
-                <div class="num">${value}</div>
+        </div>
+
+
+        <div class="half bottom">
+
+            <div class="num">
+                ${value}
             </div>
 
-            <div class="flap">
-                <div class="num">${value}</div>
+        </div>
+
+
+        <div class="flap">
+
+            <div class="num">
+                ${value}
             </div>
-        `;
+
+        </div>
+
+    `;
+
+}
+
+
+
+/* =================================
+   INITIAL TIME
+================================= */
+
+function setInitialTime(time) {
+
+    digitIDs.forEach((id, index) => {
+
+        createDigit(
+
+            document.getElementById(id),
+
+            time[index]
+
+        );
+
+    });
+
+}
+
+
+
+/* =================================
+   FLIP DIGIT
+================================= */
+
+function flipDigit(
+    element,
+    oldValue,
+    newValue
+) {
+
+    if (oldValue === newValue) {
+
+        return;
+
     }
 
-    function setInitialTime(time) {
-        digits.forEach((id, index) => {
-            createDigit(document.getElementById(id), time[index]);
-        });
-    }
 
-    function flipDigit(element, oldValue, newValue) {
-        if (oldValue === newValue) return;
+    const top =
+        element.querySelector(".top .num");
 
-        const top = element.querySelector(".top .num");
-        const bottom = element.querySelector(".bottom .num");
-        const flap = element.querySelector(".flap");
-        const flapNum = flap.querySelector(".num");
 
-        // Keep old number on top while the new number is revealed underneath.
-        top.textContent = oldValue;
-        bottom.textContent = newValue;
-        flapNum.textContent = oldValue;
+    const bottom =
+        element.querySelector(".bottom .num");
+
+
+    const flap =
+        element.querySelector(".flap");
+
+
+    const flapNumber =
+        flap.querySelector(".num");
+
+
+    /*
+       Old number remains
+       on the top flap.
+    */
+
+    top.textContent =
+        oldValue;
+
+
+    /*
+       New number appears
+       underneath.
+    */
+
+    bottom.textContent =
+        newValue;
+
+
+    /*
+       Flip starts with
+       the old number.
+    */
+
+    flapNumber.textContent =
+        oldValue;
+
+
+    /*
+       Restart animation.
+    */
+
+    flap.classList.remove("flip");
+
+    void flap.offsetWidth;
+
+    flap.classList.add("flip");
+
+
+    /*
+       After animation,
+       permanently show new number.
+    */
+
+    setTimeout(() => {
+
+        top.textContent =
+            newValue;
 
         flap.classList.remove("flip");
 
-        // Restart CSS animation.
-        void flap.offsetWidth;
+    }, 650);
 
-        flap.classList.add("flip");
+}
 
-        // After the flip, make the new number the permanent top half.
-        setTimeout(() => {
-            top.textContent = newValue;
-            flap.classList.remove("flip");
-        }, 620);
-    }
 
-    function getISTTime() {
-        const parts = new Intl.DateTimeFormat("en-IN", {
-            timeZone: "Asia/Kolkata",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true
-        }).formatToParts(new Date());
 
-        let hour = "";
-        let minute = "";
-        let period = "";
+/* =================================
+   GET IST TIME
+================================= */
 
-        for (const part of parts) {
-            if (part.type === "hour") hour = part.value;
-            if (part.type === "minute") minute = part.value;
-            if (part.type === "dayPeriod") period = part.value.toUpperCase();
-        }
+function getISTTime() {
 
-        // Make sure the hour has two digits: 09, 10, 11, etc.
-        hour = hour.padStart(2, "0");
+    const parts =
+        new Intl.DateTimeFormat(
+            "en-IN",
+            {
 
-        return {
-            time: hour + minute,
-            period: period
-        };
-    }
+                /*
+                   INDIA TIMEZONE
+                */
 
-    function updateClock() {
-        const current = getISTTime();
+                timeZone: "Asia/Kolkata",
 
-        document.getElementById("period").textContent = current.period;
+                hour: "2-digit",
 
-        if (previous === null) {
-            setInitialTime(current.time);
-            previous = current.time;
-            return;
-        }
+                minute: "2-digit",
 
-        digits.forEach((id, index) => {
-            if (current.time[index] !== previous[index]) {
-                flipDigit(
-                    document.getElementById(id),
-                    previous[index],
-                    current.time[index]
-                );
+                second: "2-digit",
+
+                hour12: true
+
             }
-        });
+        ).formatToParts(new Date());
 
-        previous = current.time;
+
+    let hour = "";
+
+    let minute = "";
+
+    let second = "";
+
+    let period = "";
+
+
+
+    /*
+       Read time components.
+    */
+
+    for (const part of parts) {
+
+
+        if (part.type === "hour") {
+
+            hour =
+                part.value;
+
+        }
+
+
+        if (part.type === "minute") {
+
+            minute =
+                part.value;
+
+        }
+
+
+        if (part.type === "second") {
+
+            second =
+                part.value;
+
+        }
+
+
+        if (part.type === "dayPeriod") {
+
+            period =
+                part.value.toUpperCase();
+
+        }
+
     }
 
-    // Start immediately.
-    updateClock();
 
-    // Check every second.
-    setInterval(updateClock, 1000);
+
+    /*
+       Make hour two digits.
+
+       Example:
+
+       8:05:09
+
+       becomes
+
+       08:05:09
+    */
+
+    hour =
+        hour.padStart(2, "0");
+
+
+
+    return {
+
+        time:
+            hour +
+            minute +
+            second,
+
+        period:
+            period
+
+    };
+
+}
+
+
+
+/* =================================
+   UPDATE CLOCK
+================================= */
+
+function updateClock() {
+
+
+    const current =
+        getISTTime();
+
+
+
+    /*
+       AM / PM
+    */
+
+    document.getElementById(
+        "period"
+    ).textContent =
+        current.period;
+
+
+
+    /*
+       First load
+    */
+
+    if (previousTime === null) {
+
+        setInitialTime(
+            current.time
+        );
+
+        previousTime =
+            current.time;
+
+        return;
+
+    }
+
+
+
+    /*
+       Check all 6 digits.
+    */
+
+    digitIDs.forEach(
+        (id, index) => {
+
+
+            const oldDigit =
+                previousTime[index];
+
+
+            const newDigit =
+                current.time[index];
+
+
+
+            /*
+               Flip only changed digits.
+            */
+
+            if (
+                oldDigit !==
+                newDigit
+            ) {
+
+                flipDigit(
+
+                    document.getElementById(id),
+
+                    oldDigit,
+
+                    newDigit
+
+                );
+
+            }
+
+        }
+    );
+
+
+
+    /*
+       Save current time.
+    */
+
+    previousTime =
+        current.time;
+
+}
+
+
+
+/* =================================
+   START CLOCK
+================================= */
+
+updateClock();
+
+
+
+/*
+   Update every second.
+*/
+
+setInterval(
+    updateClock,
+    1000
+);
+
+
 </script>
 
 </body>
 </html>
-'''
-
-path = "/mnt/data/IST_Flip_Clock.html"
-with open(path, "w", encoding="utf-8") as f:
-    f.write(html)
-
-print(path)
