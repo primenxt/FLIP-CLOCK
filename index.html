@@ -1,91 +1,340 @@
-function updateClock() {
+html = r'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IST Flip Clock</title>
 
-    // Get current time specifically in India
-    const now = new Date();
-
-    const indiaTime = new Intl.DateTimeFormat("en-IN", {
-        timeZone: "Asia/Kolkata",
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true
-    }).formatToParts(now);
-
-    let hours = 0;
-    let minutes = 0;
-    let period = "AM";
-
-    indiaTime.forEach(part => {
-        if (part.type === "hour") {
-            hours = parseInt(part.value);
-        }
-
-        if (part.type === "minute") {
-            minutes = parseInt(part.value);
-        }
-
-        if (part.type === "dayPeriod") {
-            period = part.value.toUpperCase();
-        }
-    });
-
-    // Convert to two-digit display
-    const time =
-        String(hours).padStart(2, "0") +
-        String(minutes).padStart(2, "0");
-
-    // AM / PM
-    document.getElementById("period").textContent = period;
-
-    // First load
-    if (previousTime === "") {
-
-        const ids = [
-            "hour1",
-            "hour2",
-            "minute1",
-            "minute2"
-        ];
-
-        ids.forEach((id, index) => {
-            document.querySelector(`#${id} .number`).textContent =
-                time[index];
-
-            document.querySelector(`#${id} .bottom-number`).textContent =
-                time[index];
-
-            document.querySelector(`#${id} .flip-number`).textContent =
-                time[index];
-        });
-
-        previousTime = time;
-        return;
+<style>
+    * {
+        box-sizing: border-box;
     }
 
-    // Update individual digits with flip animation
-    const ids = [
-        "hour1",
-        "hour2",
-        "minute1",
-        "minute2"
-    ];
+    html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+    }
 
-    ids.forEach((id, index) => {
+    body {
+        background: #000;
+        color: #bdbdbd;
+        font-family: Arial, Helvetica, sans-serif;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        if (time[index] !== previousTime[index]) {
+    .clock {
+        width: min(96vw, 1500px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(18px, 2vw, 35px);
+    }
 
-            updateDigit(
-                document.getElementById(id),
-                time[index],
-                previousTime[index]
-            );
+    .group {
+        display: flex;
+        gap: clamp(7px, 0.8vw, 14px);
+    }
 
+    .digit {
+        position: relative;
+        width: clamp(125px, 18vw, 285px);
+        height: clamp(190px, 25vw, 410px);
+        perspective: 900px;
+        background: #111;
+        border-radius: clamp(14px, 2vw, 28px);
+        overflow: hidden;
+        box-shadow:
+            inset 0 0 35px rgba(255,255,255,0.025),
+            0 8px 30px rgba(0,0,0,0.7);
+    }
+
+    .half {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 50%;
+        overflow: hidden;
+        background: #111;
+    }
+
+    .top {
+        top: 0;
+        border-radius: inherit inherit 0 0;
+    }
+
+    .bottom {
+        bottom: 0;
+        border-radius: 0 0 inherit inherit;
+    }
+
+    .num {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 200%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #bdbdbd;
+        font-size: clamp(150px, 20vw, 340px);
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: -0.08em;
+        user-select: none;
+    }
+
+    .top .num {
+        top: 0;
+    }
+
+    .bottom .num {
+        bottom: 0;
+    }
+
+    /* Center split */
+    .digit::after {
+        content: "";
+        position: absolute;
+        z-index: 20;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 6px;
+        transform: translateY(-50%);
+        background: #050505;
+        box-shadow: 0 1px 1px rgba(255,255,255,0.04);
+    }
+
+    /* The animated top flap */
+    .flap {
+        position: absolute;
+        z-index: 30;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 50%;
+        overflow: hidden;
+        transform-origin: bottom center;
+        transform-style: preserve-3d;
+        background: #111;
+        border-radius: inherit inherit 0 0;
+        backface-visibility: hidden;
+    }
+
+    .flap .num {
+        top: 0;
+    }
+
+    .flap.flip {
+        animation: flip 0.62s cubic-bezier(.37,.01,.2,1) forwards;
+    }
+
+    @keyframes flip {
+        0% {
+            transform: rotateX(0deg);
+            filter: brightness(1);
+        }
+        45% {
+            filter: brightness(.72);
+        }
+        100% {
+            transform: rotateX(-90deg);
+            filter: brightness(.5);
+        }
+    }
+
+    .period {
+        position: fixed;
+        top: 28px;
+        left: 35px;
+        font-size: clamp(20px, 2.7vw, 44px);
+        font-weight: 700;
+        color: #bdbdbd;
+        letter-spacing: -1px;
+    }
+
+    .label {
+        position: fixed;
+        bottom: 22px;
+        left: 28px;
+        color: #777;
+        font-size: 14px;
+        letter-spacing: .5px;
+    }
+
+    @media (max-width: 700px) {
+        .clock {
+            gap: 8px;
         }
 
-    });
+        .group {
+            gap: 5px;
+        }
 
-    previousTime = time;
-}
+        .digit {
+            width: 22vw;
+            height: 32vw;
+            border-radius: 12px;
+        }
 
-updateClock();
+        .num {
+            font-size: 29vw;
+        }
 
-setInterval(updateClock, 1000);
+        .digit::after {
+            height: 4px;
+        }
+
+        .period {
+            top: 16px;
+            left: 18px;
+            font-size: 18px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="period" id="period">AM</div>
+
+<div class="clock">
+
+    <div class="group">
+        <div class="digit" id="h1"></div>
+        <div class="digit" id="h2"></div>
+    </div>
+
+    <div class="group">
+        <div class="digit" id="m1"></div>
+        <div class="digit" id="m2"></div>
+    </div>
+
+</div>
+
+<div class="label">IST • India Standard Time</div>
+
+<script>
+    const digits = ["h1", "h2", "m1", "m2"];
+    let previous = null;
+
+    function createDigit(element, value) {
+        element.innerHTML = `
+            <div class="half top">
+                <div class="num">${value}</div>
+            </div>
+
+            <div class="half bottom">
+                <div class="num">${value}</div>
+            </div>
+
+            <div class="flap">
+                <div class="num">${value}</div>
+            </div>
+        `;
+    }
+
+    function setInitialTime(time) {
+        digits.forEach((id, index) => {
+            createDigit(document.getElementById(id), time[index]);
+        });
+    }
+
+    function flipDigit(element, oldValue, newValue) {
+        if (oldValue === newValue) return;
+
+        const top = element.querySelector(".top .num");
+        const bottom = element.querySelector(".bottom .num");
+        const flap = element.querySelector(".flap");
+        const flapNum = flap.querySelector(".num");
+
+        // Keep old number on top while the new number is revealed underneath.
+        top.textContent = oldValue;
+        bottom.textContent = newValue;
+        flapNum.textContent = oldValue;
+
+        flap.classList.remove("flip");
+
+        // Restart CSS animation.
+        void flap.offsetWidth;
+
+        flap.classList.add("flip");
+
+        // After the flip, make the new number the permanent top half.
+        setTimeout(() => {
+            top.textContent = newValue;
+            flap.classList.remove("flip");
+        }, 620);
+    }
+
+    function getISTTime() {
+        const parts = new Intl.DateTimeFormat("en-IN", {
+            timeZone: "Asia/Kolkata",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true
+        }).formatToParts(new Date());
+
+        let hour = "";
+        let minute = "";
+        let period = "";
+
+        for (const part of parts) {
+            if (part.type === "hour") hour = part.value;
+            if (part.type === "minute") minute = part.value;
+            if (part.type === "dayPeriod") period = part.value.toUpperCase();
+        }
+
+        // Make sure the hour has two digits: 09, 10, 11, etc.
+        hour = hour.padStart(2, "0");
+
+        return {
+            time: hour + minute,
+            period: period
+        };
+    }
+
+    function updateClock() {
+        const current = getISTTime();
+
+        document.getElementById("period").textContent = current.period;
+
+        if (previous === null) {
+            setInitialTime(current.time);
+            previous = current.time;
+            return;
+        }
+
+        digits.forEach((id, index) => {
+            if (current.time[index] !== previous[index]) {
+                flipDigit(
+                    document.getElementById(id),
+                    previous[index],
+                    current.time[index]
+                );
+            }
+        });
+
+        previous = current.time;
+    }
+
+    // Start immediately.
+    updateClock();
+
+    // Check every second.
+    setInterval(updateClock, 1000);
+</script>
+
+</body>
+</html>
+'''
+
+path = "/mnt/data/IST_Flip_Clock.html"
+with open(path, "w", encoding="utf-8") as f:
+    f.write(html)
+
+print(path)
