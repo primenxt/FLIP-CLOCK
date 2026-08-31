@@ -1,0 +1,91 @@
+function updateClock() {
+
+    // Get current time specifically in India
+    const now = new Date();
+
+    const indiaTime = new Intl.DateTimeFormat("en-IN", {
+        timeZone: "Asia/Kolkata",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true
+    }).formatToParts(now);
+
+    let hours = 0;
+    let minutes = 0;
+    let period = "AM";
+
+    indiaTime.forEach(part => {
+        if (part.type === "hour") {
+            hours = parseInt(part.value);
+        }
+
+        if (part.type === "minute") {
+            minutes = parseInt(part.value);
+        }
+
+        if (part.type === "dayPeriod") {
+            period = part.value.toUpperCase();
+        }
+    });
+
+    // Convert to two-digit display
+    const time =
+        String(hours).padStart(2, "0") +
+        String(minutes).padStart(2, "0");
+
+    // AM / PM
+    document.getElementById("period").textContent = period;
+
+    // First load
+    if (previousTime === "") {
+
+        const ids = [
+            "hour1",
+            "hour2",
+            "minute1",
+            "minute2"
+        ];
+
+        ids.forEach((id, index) => {
+            document.querySelector(`#${id} .number`).textContent =
+                time[index];
+
+            document.querySelector(`#${id} .bottom-number`).textContent =
+                time[index];
+
+            document.querySelector(`#${id} .flip-number`).textContent =
+                time[index];
+        });
+
+        previousTime = time;
+        return;
+    }
+
+    // Update individual digits with flip animation
+    const ids = [
+        "hour1",
+        "hour2",
+        "minute1",
+        "minute2"
+    ];
+
+    ids.forEach((id, index) => {
+
+        if (time[index] !== previousTime[index]) {
+
+            updateDigit(
+                document.getElementById(id),
+                time[index],
+                previousTime[index]
+            );
+
+        }
+
+    });
+
+    previousTime = time;
+}
+
+updateClock();
+
+setInterval(updateClock, 1000);
